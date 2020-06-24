@@ -1,30 +1,66 @@
 # Quaternion
 
+Quaternions, much like [complex][complex] numbers, form a number system that extends the real numbers. They are defined by a real component, and three imaginary components. The real component is commonly called the scalar part, while the imaginary components are called the vector part. Although not limited to, quaternions are frequently used as a representation of the rotation of an object in three dimensions – such as in simulations, computer graphics, computer vision and more.
+
 This module provides a `Quaternion` type generic over an underlying `RealType`:
 
 ```swift
 1> import QuaternionModule
-2> let q = Quaternion(1, (1,1,1)) // q = 1 + i + j + k
+2> let q = Quaternion(real: 1, imaginary: 1,1,1) // q = 1 + i + j + k
 ```
 
-The usual arithmetic operators are provided for Quaternions, many useful properties, plus conformances to the
-obvious usual protocols: `Equatable`, `Hashable`, `Codable` (if the underlying `RealType` is), and `AlgebraicField`
-(hence also `AdditiveArithmetic` and `SignedNumeric`).
+The usual [arithmetic](#arithmetic) operators are provided for Quaternions, many useful properties, as well as conversion to and from other [transformation](#transformation) representations such as angle-axis, rotation vectors and polar decomposition. Quaternions conform to the usual protocols: `Equatable`, `Hashable`, `Codable` (if the underlying `RealType` is); but also `AdditiveArithmetic`, `Numeric`, `SignedNumeric` and `AlgebraicField`.
 
-### Dependencies:
-- `RealModule`.
+## Arithmetic
 
-### The magnitude property
+The module defines protocol conformance on `Quaternion` for `AdditiveArithmetic`, `SignedNumeric` and `AlgebraicField`. Additionally, the module provides a `normalized` property on `Quaternion`. For any finite and non-zero quaternion `normalized` produces its norm.
+
+The module, however, does not provide operators for mixed real-quaternion arithmetic. They are not provided for two reasons: 
+
+- Swift generally avoids heterogenous arithmetic operators
+- They lead to counter-intuitive behavior of type inference
+
+For a concrete example of the second point, suppose that heterogeneous arithmetic operators existed, suppose that we're in a Quaternion type context and consider the following snippet:
+
+```swift
+extension Quaternion {
+  static func doSomething() {
+    let a: RealType = 1
+    let b = 2*a // type is inferred as Quaternion 🤪
+  }
+}
+```
+
+This is a show-stopper for heterogeneous arithmetic operators in the short term ([#12][i12]).
+
+For additional information on arithmetics, consult [Arithmetic](Arithmetic.md).
+
+## Norms
+
+Quaternions define a normed vector space over the real numbers with 4 dimensions. When viewed as a vector space, many [different norms][norms] can be defined on Quaternion.
+
 The `Numeric` protocol requires a `.magnitude` property, but (deliberately) does not fully specify the semantics.
-The most obvious choice for `Quaternion` would be to use the Euclidean norm (aka the "2-norm", given by `sqrt(real*real + i*i + k*k + j*j)`).
-However, in practice there are good reasons to use something else instead:
+While the most obvious choice for `Quaternion` would be to use the Euclidean norm (aka the "2-norm", given by `sqrt(ix*ix + iy*iy + iz*iz + r*r)`), in practice there are good reasons to use something else instead. Quaternion binds `.magnitude` to the ∞-norm (aka the maximum norm, given by `max(abs(ix) + abs(iy) + abs(iz) + abs(r))`). For discussion of this choice, as well as background information on norms, consult [Norms.md](Norms.md).
 
-- The 2-norm requires special care to avoid spurious overflow/underflow, but the naive expressions for the 1-norm ("taxicab norm") or ∞-norm ("sup norm") are always correct.
-- Even when care is used, near the overflow boundary the 2-norm and the 1-norm are not representable.
-  As an example, consider `q = Quaternion(big, (big, big, big))`, where `big` is `Double.greatestFiniteMagnitude`. The 1-norm and 2-norm of `q` both overflow (the 1-norm would be `4*big`, and the 2-norm would be `sqrt(4)*big`, neither of which are representable as `Double`), but the ∞-norm is always equal to either `real`, `i`, `j` or `k`, so it is guaranteed to be representable.
-Because of this, the ∞-norm is the obvious alternative; it gives the nicest API surface.
-- If we consider the magnitude of more exotic types, like operators, the 1-norm and ∞-norm are significantly easier to compute than the 2-norm (O(n) vs. "no closed form expression, but O(n^3) iterative methods"), so it is nice to establish a precedent of `.magnitude` binding one of these cheaper-to-compute norms.
-- The ∞-norm is heavily used in other computational libraries; for example, it is used by the `izamax` and `icamax` functions in BLAS.
+## Transformation
 
-The 2-norm still needs to be available, of course, because sometimes you need it.
-This functionality is accessed via the `.length` and `.lengthSquared` properties.
+In computer science, quaternions are frequently used to represent three-dimensional rotations; as quaternions have some advantages over other representations.
+
+This module provides conversion to and from other three-dimensional rotation representations, namely angle-axis, rotation vectors and polar decomposition. Additionally, the module provides an optimized method to rotate arbitrary vectors by a quaternion. For additional information on transformations and other forms of transformation representations, consult [Transformation](Transformation.md)
+
+---
+
+## Design notes
+
+### Infinity and nan
+
+`Quaternion`, much like [`Complex`][complex], does not assign any semantic meaning to the sign of zero and infinity; `(±0,±0,±0,±0)`, are all considered to be encodings of the value zero.
+Similarly, all quaternions with either value being `±inf` or `nan` are all to be encodings of a single exceptional value with infinite magnitude and an undefined angle as well as an undefined axis.
+
+Because angle and axis are undefined, the `real` and `imaginary` properties return `.nan` for non-finite values.
+This decision might be revisited once users gain some experience working with the type to make sure that it's a tradeoff that we're happy with, but early experiments show that it greatly simplifies the implementation of some operations without significant tradeoffs in usability.
+
+[complex]: ../ComplexModule/README.md
+[i12]: https://github.com/apple/swift-numerics/issues/12
+[norms]: https://en.wikipedia.org/wiki/Norm_(mathematics)
+[gimbal]: https://en.wikipedia.org/wiki/Gimbal_lock
