@@ -243,7 +243,16 @@ extension Quaternion {
     components == .zero
   }
 
-  /// True if this value is only defined by the imaginary part (`real == .zero`)
+  /// True if this quaternion is pure.
+  ///
+  /// A quaternion is pure if the real component is zero.
+  ///
+  /// See also:
+  /// -
+  /// - `.isFinite`
+  /// - `.isNormal`
+  /// - `.isSubnormal`
+  /// - `.isPure`
   @_transparent
   public var isPure: Bool {
     real.isZero
