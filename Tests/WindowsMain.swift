@@ -18,10 +18,45 @@ import RealTests
 @testable
 import ComplexTests
 
+@testable
+import QuaternionTests
+
 extension ComplexTests.ApproximateEqualityTests {
   static var all = testCase([
     ("testFloat", ComplexTests.ApproximateEqualityTests.testFloat),
     ("testDouble", ComplexTests.ApproximateEqualityTests.testDouble),
+  ])
+}
+
+extension ComplexTests.ArithmeticTests {
+  static var all = testCase([
+    ("testPolar", ComplexTests.ArithmeticTests.testPolar),
+    ("testBaudinSmith", ComplexTests.ArithmeticTests.testBaudinSmith),
+    ("testDivisionByZero", ComplexTests.ArithmeticTests.testDivisionByZero),
+  ])
+}
+
+extension ComplexTests.PropertyTests {
+  static var all = testCase([
+    ("testProperties", ComplexTests.PropertyTests.testProperties),
+    ("testEquatableHashable", ComplexTests.PropertyTests.testEquatableHashable),
+    ("testCodable", ComplexTests.PropertyTests.testCodable),
+  ])
+}
+
+extension QuaternionTests.ArithmeticTests {
+  static var all = testCase([
+    ("testMultiplication", QuaternionTests.ArithmeticTests.testMultiplication),
+    ("testDivision", QuaternionTests.ArithmeticTests.testDivision),
+    ("testDivisionByZero", QuaternionTests.ArithmeticTests.testDivisionByZero),
+  ])
+}
+
+extension QuaternionTests.PropertyTests {
+  static var all = testCase([
+    ("testProperties", QuaternionTests.PropertyTests.testProperties),
+    ("testEquatableHashable", QuaternionTests.PropertyTests.testEquatableHashable),
+    ("testCodable", QuaternionTests.PropertyTests.testCodable),
   ])
 }
 
@@ -66,29 +101,15 @@ extension IntegerExponentTests {
 }
 #endif
 
-extension ArithmeticTests {
-  static var all = testCase([
-    ("testPolar", ArithmeticTests.testPolar),
-    ("testBaudinSmith", ArithmeticTests.testBaudinSmith),
-    ("testDivisionByZero", ArithmeticTests.testDivisionByZero),
-  ])
-}
-
-extension PropertyTests {
-  static var all = testCase([
-    ("testProperties", PropertyTests.testProperties),
-    ("testEquatableHashable", PropertyTests.testEquatableHashable),
-    ("testCodable", PropertyTests.testCodable),
-  ])
-}
-
 var testCases = [
   ComplexTests.ApproximateEqualityTests.all,
+  ComplexTests.ArithmeticTests.all,
+  ComplexTests.PropertyTests.all,
+  QuaternionTests.ArithmeticTests.all,
+  QuaternionTests.PropertyTests.all,
   RealTests.ApproximateEqualityTests.all,
   ElementaryFunctionChecks.all,
   IntegerExponentTests.all,
-  ArithmeticTests.all,
-  PropertyTests.all,
 ]
 
 #if swift(>=5.3) && canImport(_Differentiation)
