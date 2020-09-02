@@ -12,6 +12,7 @@ find_package(Foundation CONFIG QUIET)
 find_package(XCTest CONFIG QUIET)
 
 add_subdirectory(ComplexTests)
+add_subdirectory(QuaternionTests)
 add_subdirectory(RealTests)
 
 add_executable(SwiftNumericsTestRunner

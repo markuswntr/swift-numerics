@@ -1,0 +1,22 @@
+#[[
+This source file is part of the Swift Numerics open source project
+
+Copyright (c) 2019 Apple Inc. and the Swift Numerics project authors
+Licensed under Apache License v2.0 with Runtime Library Exception
+
+See https://swift.org/LICENSE.txt for license information
+#]]
+
+add_library(QuaternionTests
+  ArithmeticTests.swift
+  PropertyTests.swift)
+set_target_properties(QuaternionTests PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_Swift_MODULE_DIRECTORY})
+target_compile_options(QuaternionTests PRIVATE
+  -enable-testing)
+target_link_libraries(QuaternionTests PUBLIC
+  $<$<NOT:$<PLATFORM_ID:Darwin>>:Foundation>
+  QuaternionModule
+  Numerics
+  _TestSupport
+  XCTest)
