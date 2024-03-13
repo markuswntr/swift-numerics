@@ -125,7 +125,7 @@ extension Complex: ElementaryFunctions {
     }
     // Special cases out of the way, evaluate as discussed above.
     return Complex(
-      RealType._mulAdd(.cos(z.y), .expMinusOne(z.x), .cosMinusOne(z.y)),
+      Relaxed.multiplyAdd(.cos(z.y), .expMinusOne(z.x), .cosMinusOne(z.y)),
       .exp(z.x) * .sin(z.y)
     )
   }
@@ -306,7 +306,7 @@ extension Complex: ElementaryFunctions {
     // We are not trying for sub-ulp accuracy, just a good relative error
     // bound, so for our purposes it suffices to have log u dominate the
     // result:
-    if u >= 1 || u >= RealType._mulAdd(u,u,v*v) {
+    if u >= 1 || u >= Relaxed.multiplyAdd(u, u, v*v) {
       let r = v / u
       return Complex(.log(u) + .log(onePlus: r*r)/2, θ)
     }
@@ -419,14 +419,21 @@ extension Complex: ElementaryFunctions {
   }
   
   // MARK: - pow-like functions
+  /// `exp(w*log(z))`
+  ///
+  /// Edge cases for this function are defined according to the defining
+  /// expression exp(w log(z)), except that we define pow(0, w) to be 0
+  /// instead of infinity when w is in the (strict) right half-plane, so that
+  /// we agree with RealType.pow on the positive real line.
   @inlinable
   public static func pow(_ z: Complex, _ w: Complex) -> Complex {
+    if z.isZero { return w.real > 0 ? zero : infinity }
     return exp(w * log(z))
   }
   
   @inlinable
   public static func pow(_ z: Complex, _ n: Int) -> Complex {
-    if z.isZero { return .zero }
+    if z.isZero { return n < 0 ? infinity : n == 0 ? one : zero }
     // TODO: this implementation is not quite correct, because n may be
     // rounded in conversion to RealType. This only effects very extreme
     // cases, so we'll leave it alone for now.

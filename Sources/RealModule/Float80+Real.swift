@@ -132,6 +132,7 @@ extension Float80: Real {
   @_transparent
   public static func pow(_ x: Float80, _ y: Float80) -> Float80 {
     guard x >= 0 else { return .nan }
+    if x == 0 && y == 0 { return .nan }
     return libm_powl(x, y)
   }
   
@@ -163,6 +164,16 @@ extension Float80: Real {
   public static func logGamma(_ x: Float80) -> Float80 {
     var dontCare: Int32 = 0
     return libm_lgammal(x, &dontCare)
+  }
+  
+  @_transparent
+  public static func _relaxedAdd(_ a: Float80, _ b: Float80) -> Float80 {
+    _numerics_relaxed_addl(a, b)
+  }
+  
+  @_transparent
+  public static func _relaxedMul(_ a: Float80, _ b: Float80) -> Float80 {
+    _numerics_relaxed_mull(a, b)
   }
 }
 #endif
